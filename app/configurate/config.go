@@ -22,19 +22,19 @@ type JsonConfig struct {
 	ConsonantSounds  map[string][]string `json:"consonantSounds" bson:"consonantSounds"`
 }
 
-func (jc *JsonConfig) GetVowelLetters() []string {
+func (jc JsonConfig) GetVowelLetters() []string {
 	return jc.VowelLetters
 }
 
-func (jc *JsonConfig) GetConsonantLetters() []string {
+func (jc JsonConfig) GetConsonantLetters() []string {
 	return jc.ConsonantLetters
 }
 
-func (jc *JsonConfig) GetConsonantSounds() map[string][]string {
+func (jc JsonConfig) GetConsonantSounds() map[string][]string {
 	return jc.ConsonantSounds
 }
 
-func (jc *JsonConfig) IsVowelLetter(letter string) bool {
+func (jc JsonConfig) IsVowelLetter(letter string) bool {
 	for _, v := range jc.VowelLetters {
 		if v == letter {
 			return true
@@ -43,7 +43,7 @@ func (jc *JsonConfig) IsVowelLetter(letter string) bool {
 	return false
 }
 
-func (jc *JsonConfig) IsConsonantLetter(letter string) bool {
+func (jc JsonConfig) IsConsonantLetter(letter string) bool {
 	for _, v := range jc.ConsonantLetters {
 		if v == letter {
 			return true
@@ -52,11 +52,11 @@ func (jc *JsonConfig) IsConsonantLetter(letter string) bool {
 	return false
 }
 
-func (jc *JsonConfig) GetDigraphsFromSound(sound string) []string {
+func (jc JsonConfig) GetDigraphsFromSound(sound string) []string {
 	return jc.ConsonantSounds[sound]
 }
 
-func (jc *JsonConfig) IsSoundMatchingDigraph(sound string, digraph string) bool {
+func (jc JsonConfig) IsSoundMatchingDigraph(sound string, digraph string) bool {
 	digraphs := jc.ConsonantSounds[sound]
 	for _, d := range digraphs {
 		if d == digraph {
