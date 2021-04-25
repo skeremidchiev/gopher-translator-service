@@ -17,6 +17,8 @@ type historyResponse struct {
 
 func handleHistoryRequest() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// TODO: Handle panic
+
 		// TODO:
 		// history, err :=
 

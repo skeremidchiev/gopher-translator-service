@@ -2,8 +2,10 @@ package configurate
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 type Config interface {
@@ -12,6 +14,7 @@ type Config interface {
 	GetConsonantSounds() map[string][]string
 	IsVowelLetter(string) bool
 	IsConsonantLetter(string) bool
+	CheckConsonantSounds(string, string) (string, error)
 	GetDigraphsFromSound(string) []string
 	IsSoundMatchingDigraph(string, string) bool
 }
@@ -52,12 +55,34 @@ func (jc JsonConfig) IsConsonantLetter(letter string) bool {
 	return false
 }
 
-func (jc JsonConfig) GetDigraphsFromSound(sound string) []string {
-	return jc.ConsonantSounds[sound]
+func (jc JsonConfig) CheckConsonantSounds(word, phonetics string) (string, error) {
+	unknownError := fmt.Errorf("Unknown Consonant Sounds!")
+
+	var val []string
+	var ok bool
+
+	val, ok = jc.ConsonantSounds[phonetics[:2]] // in case ʒ and ʃ
+	if !ok {
+		val, ok = jc.ConsonantSounds[phonetics[:1]]
+		if !ok {
+			return "", unknownError
+		}
+	}
+
+	for _, v := range val {
+		if strings.HasPrefix(word, v) {
+			return v, nil
+		}
+	}
+	return "", unknownError
 }
 
-func (jc JsonConfig) IsSoundMatchingDigraph(sound string, digraph string) bool {
-	digraphs := jc.ConsonantSounds[sound]
+func (jc JsonConfig) GetDigraphsFromSound(phonetics string) []string {
+	return jc.ConsonantSounds[phonetics]
+}
+
+func (jc JsonConfig) IsSoundMatchingDigraph(phonetics string, digraph string) bool {
+	digraphs := jc.ConsonantSounds[phonetics]
 	for _, d := range digraphs {
 		if d == digraph {
 			return true

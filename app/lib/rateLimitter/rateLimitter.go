@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type rateLimitter struct {
+type Limitter struct {
 	// number of calls in current interval
 	callsTracker int
 	// calls limit
@@ -20,8 +20,8 @@ type rateLimitter struct {
 // NewRateLimitter
 // maxRequests -> number of maximum simultaneous requests
 // timeOutDuration -> wait time after limit is reached
-func NewRateLimitter(maxRequests int, timeOutDuration time.Duration) *rateLimitter {
-	return &rateLimitter{
+func NewRateLimitter(maxRequests int, timeOutDuration time.Duration) *Limitter {
+	return &Limitter{
 		callsTracker: 0,
 		timeout:      timeOutDuration,
 		maxCalls:     maxRequests,
@@ -29,7 +29,7 @@ func NewRateLimitter(maxRequests int, timeOutDuration time.Duration) *rateLimitt
 }
 
 // Throttle
-func (rl *rateLimitter) Throttle() {
+func (rl *Limitter) Throttle() {
 	rl.m.Lock()
 	defer rl.m.Unlock()
 
