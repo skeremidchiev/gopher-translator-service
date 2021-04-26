@@ -11,7 +11,7 @@ type Storage interface {
 	Save(string, string) error
 	Update(string, string) error
 	GetTranslation(string) (string, error)
-	GetAll() []byte
+	GetAll() string
 }
 
 type MapStorage struct {
@@ -59,7 +59,7 @@ func (ss sortableSlice) Less(i, j int) bool {
 	return strings.Compare(ss[i], ss[j]) == -1
 }
 
-func (ms *MapStorage) GetAll() []byte {
+func (ms *MapStorage) GetAll() string {
 	keys := make(sortableSlice, 0)
 
 	for key := range ms.History {
@@ -68,16 +68,16 @@ func (ms *MapStorage) GetAll() []byte {
 
 	sort.Sort(keys)
 
-	result := "{“history”:["
+	result := "["
 	for i, key := range keys {
 		if i != 0 {
 			result += ","
 		}
 		result += fmt.Sprintf("{\"%s\":\"%s\"}", key, ms.History[key])
 	}
-	result += "]}"
+	result += "]"
 
-	return []byte(result)
+	return result
 }
 
 func NewStorage() Storage {

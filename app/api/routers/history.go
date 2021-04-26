@@ -1,9 +1,12 @@
 package routers
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/apsystole/log"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/render"
 	"github.com/skeremidchiev/gopher-translator-service/app/api"
 	"github.com/skeremidchiev/gopher-translator-service/app/storage"
 )
@@ -13,23 +16,24 @@ type historyRequest struct {
 
 type historyResponse struct {
 	api.APIResponse
-	history string `json:"history"`
+	History string `json:"history"`
 }
 
 func handleHistoryRequest(s storage.Storage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Handle panic
+		defer func() {
+			if err := recover(); err != nil {
+				ret := fmt.Sprintf("Paniced, recovered value: %v\n", err)
+				log.Errorln("[Routers] ", ret)
 
-		// TODO:
-		// history, err :=
+				render.Status(r, 500)
+				render.JSON(w, r, historyResponse{api.APIResponse{Status: false, Error: ret}, ""})
+			}
+		}()
 
-		// if err != nil {
-		// 	log.Errorln(err.Error())
-		// 	render.JSON(w, r, historyResponse{api.APIResponse{Status: false, Error: err.Error()}, nil})
-		// 	return
-		// }
+		history := s.GetAll()
 
-		// render.JSON(w, r, historyResponse{api.APIResponse{Status: true, Error: ""}, history})
+		render.JSON(w, r, historyResponse{api.APIResponse{Status: true, Error: ""}, history})
 	}
 }
 
