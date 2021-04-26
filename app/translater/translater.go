@@ -15,20 +15,24 @@ const (
 	dictionaryapi_us = "https://api.dictionaryapi.dev/api/v2/entries/en/%s"
 )
 
-type Translater struct {
+type Translater interface {
+	ParseWord(string) (string, error)
+	ParseSentence(string) (string, error)
+}
+
+type FreeDictionaryAPITranslater struct {
 	conf configurate.Config
 	rl   *rateLimitter.Limitter
 }
 
-func NewTranslater(c configurate.Config) *Translater {
-
-	return &Translater{
+func NewTranslater(c configurate.Config) Translater {
+	return &FreeDictionaryAPITranslater{
 		conf: c,
 		rl:   rateLimitter.NewRateLimitter(1, 100*time.Millisecond),
 	}
 }
 
-func (t *Translater) ParseWord(word string) (string, error) {
+func (t *FreeDictionaryAPITranslater) ParseWord(word string) (string, error) {
 	word = strings.ToLower(word)
 
 	if checkForEmptyWord(word) {
@@ -67,7 +71,7 @@ func (t *Translater) ParseWord(word string) (string, error) {
 	return wordWithoutPrefix + prefix + "ogo", nil // consonant sound
 }
 
-func (t *Translater) ParseSentence(sentence string) (string, error) {
+func (t *FreeDictionaryAPITranslater) ParseSentence(sentence string) (string, error) {
 	if !checkForSign(sentence) {
 		return "", fmt.Errorf("[Translater] Sentence \"%s\" badly formed!", sentence)
 	}
@@ -95,7 +99,7 @@ func (t *Translater) ParseSentence(sentence string) (string, error) {
 
 // getPhonetics - retrieves word phonetics from external API in order
 // to find whether word starts with consonant sound
-func (t *Translater) getPhonetics(word string) (string, error) {
+func (t *FreeDictionaryAPITranslater) getPhonetics(word string) (string, error) {
 	t.rl.Throttle()
 
 	url := fmt.Sprintf(dictionaryapi_us, word)

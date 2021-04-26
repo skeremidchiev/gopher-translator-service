@@ -8,6 +8,8 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	"github.com/skeremidchiev/gopher-translator-service/app/api"
+	"github.com/skeremidchiev/gopher-translator-service/app/storage"
+	"github.com/skeremidchiev/gopher-translator-service/app/translater"
 )
 
 type wordRequest struct {
@@ -19,7 +21,7 @@ type wordResponse struct {
 	word string `json:"gopher-word"`
 }
 
-func handleWordRequest() func(w http.ResponseWriter, r *http.Request) {
+func handleWordRequest(tr translater.Translater, s storage.Storage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var wordRequest *wordRequest
 
@@ -43,8 +45,8 @@ func handleWordRequest() func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewWordRouter() http.Handler {
+func NewWordRouter(tr translater.Translater, s storage.Storage) http.Handler {
 	r := chi.NewRouter()
-	r.Post("/", handleWordRequest())
+	r.Post("/", handleWordRequest(tr, s))
 	return r
 }

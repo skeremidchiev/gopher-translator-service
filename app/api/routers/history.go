@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/skeremidchiev/gopher-translator-service/app/api"
+	"github.com/skeremidchiev/gopher-translator-service/app/storage"
 )
 
 type historyRequest struct {
@@ -15,7 +16,7 @@ type historyResponse struct {
 	history string `json:"history"`
 }
 
-func handleHistoryRequest() func(w http.ResponseWriter, r *http.Request) {
+func handleHistoryRequest(s storage.Storage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO: Handle panic
 
@@ -32,8 +33,8 @@ func handleHistoryRequest() func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewHistoryRouter() http.Handler {
+func NewHistoryRouter(s storage.Storage) http.Handler {
 	r := chi.NewRouter()
-	r.Get("/", handleHistoryRequest())
+	r.Get("/", handleHistoryRequest(s))
 	return r
 }

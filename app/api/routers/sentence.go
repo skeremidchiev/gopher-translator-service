@@ -8,6 +8,8 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	"github.com/skeremidchiev/gopher-translator-service/app/api"
+	"github.com/skeremidchiev/gopher-translator-service/app/storage"
+	"github.com/skeremidchiev/gopher-translator-service/app/translater"
 )
 
 type sentenceRequest struct {
@@ -19,7 +21,7 @@ type sentenceResponse struct {
 	sentence string `json:"gopher-sentence"`
 }
 
-func handleSentenceRequest() func(w http.ResponseWriter, r *http.Request) {
+func handleSentenceRequest(tr translater.Translater, s storage.Storage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var sentenceRequest *sentenceRequest
 
@@ -43,8 +45,8 @@ func handleSentenceRequest() func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewSentenceRouter() http.Handler {
+func NewSentenceRouter(tr translater.Translater, s storage.Storage) http.Handler {
 	r := chi.NewRouter()
-	r.Post("/", handleSentenceRequest())
+	r.Post("/", handleSentenceRequest(tr, s))
 	return r
 }
