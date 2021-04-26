@@ -56,24 +56,27 @@ func (jc JsonConfig) IsConsonantLetter(letter string) bool {
 }
 
 func (jc JsonConfig) CheckConsonantSounds(word, phonetics string) (string, error) {
-	unknownError := fmt.Errorf("Unknown Consonant Sounds!")
+	unknownError := fmt.Errorf("Unknown Consonant Sounds")
 
-	var val []string
-	var ok bool
+	// fmt.Printf("word: %+v\n", word)
+	// fmt.Printf("phonetics: %+v\n", phonetics)
 
-	val, ok = jc.ConsonantSounds[phonetics[:2]] // in case ʒ and ʃ
-	if !ok {
-		val, ok = jc.ConsonantSounds[phonetics[:1]]
-		if !ok {
-			return "", unknownError
+	for key, val := range jc.ConsonantSounds {
+		if strings.HasPrefix(phonetics, key) {
+
+			// fmt.Printf("sound: %+v\n", key)
+			// fmt.Printf("digraphs: %+v\n", val)
+
+			for _, v := range val {
+				// fmt.Printf("Prefix: %+v\n", v)
+				if strings.HasPrefix(word, v) {
+					// fmt.Printf("Prefix: %+v  DONE\n", v)
+					return v, nil
+				}
+			}
 		}
 	}
 
-	for _, v := range val {
-		if strings.HasPrefix(word, v) {
-			return v, nil
-		}
-	}
 	return "", unknownError
 }
 

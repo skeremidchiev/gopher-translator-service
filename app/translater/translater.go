@@ -39,35 +39,58 @@ func (t *Translater) ParseWord(word string) (string, error) {
 		return "", fmt.Errorf("[Translater] Word \"%s\" contains apostrophes!", word)
 	}
 
-	if t.conf.IsVowelLetter(string(word[0])) {
+	if t.conf.IsVowelLetter(string(word[0])) { // vowel case
 		return "g" + word, nil
 	}
 
-	if word[:2] == "xr" {
+	if word[:2] == "xr" { // "xr" case
 		return "ge" + word, nil
 	}
 
 	ph, err := t.getPhonetics(word)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("[Translater] Word \"%s\" failed with error: %s!", word, err.Error())
 	}
+
+	fmt.Printf("ph: %+v\n", ph)
 
 	prefix, err := t.conf.CheckConsonantSounds(word, ph)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("[Translater] Word \"%s\" failed with error: %s!", word, err.Error())
 	}
 
 	wordWithoutPrefix := word[len(prefix):]
-	if strings.HasPrefix(wordWithoutPrefix, "qu") {
+	if strings.HasPrefix(wordWithoutPrefix, "qu") { // consonant sound and "qu"
 		return wordWithoutPrefix[2:] + prefix + "qu" + "ogo", nil
 	}
 
-	return wordWithoutPrefix + prefix + "ogo", nil
+	return wordWithoutPrefix + prefix + "ogo", nil // consonant sound
 }
 
-func (t *Translater) ParseSentence(words string) (string, error) {
+func (t *Translater) ParseSentence(sentence string) (string, error) {
+	if !checkForSign(sentence) {
+		return "", fmt.Errorf("[Translater] Sentence \"%s\" badly formed!", sentence)
+	}
 
-	return "", nil
+	result := ""
+	l := len(sentence)
+	sign := sentence[l-1:]
+	sentence = sentence[:l-1]
+	for i, word := range strings.Split(sentence, " ") {
+		translation, err := t.ParseWord(word)
+		if err != nil {
+			return "", err
+		}
+
+		if i == 0 { // first word to upper case
+			translation = strings.Title(translation)
+		}
+
+		result += translation + " "
+	}
+	result = result[:len(result)-1] + sign
+
+	return result, nil
 }
 
 // getPhonetics - retrieves word phonetics from external API in order
@@ -91,7 +114,7 @@ func (t *Translater) getPhonetics(word string) (string, error) {
 	}{}
 	err = json.NewDecoder(resp.Body).Decode(&j)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("[Translater] Unknown word")
 	}
 
 	phonetics := j[0].Phonetics[0].Text
@@ -99,7 +122,12 @@ func (t *Translater) getPhonetics(word string) (string, error) {
 		return "", fmt.Errorf("[Translater] Incorrect or unknown word")
 	}
 
-	phonetics = strings.ReplaceAll(phonetics, "/", "") // remove forward slashes
+	phonetics = strings.ReplaceAll(phonetics, "/", "")   // remove forward slashes
+	phonetics = strings.ReplaceAll(phonetics, "ˈ", "")   // remove emphasis
+	phonetics = strings.ReplaceAll(phonetics, "ˌ", "")   // remove separators
+	phonetics = strings.ReplaceAll(phonetics, "(h)", "") // remove silent h
+	phonetics = strings.ReplaceAll(phonetics, "(n)", "") // remove silent n
+	phonetics = strings.ReplaceAll(phonetics, "(p)", "") // remove silent p
 
 	return phonetics, nil
 }
@@ -118,4 +146,12 @@ func checkForApostrophes(word string) bool {
 	}
 
 	return false
+}
+
+func checkForSign(sentence string) bool {
+	if strings.LastIndexAny(sentence, ".!?") != len(sentence)-1 {
+		return false
+	}
+
+	return true
 }

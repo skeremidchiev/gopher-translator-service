@@ -16,7 +16,7 @@ func getConfiguration() configurate.Config {
 		log.Fatal("[Main] ", err)
 	}
 
-	log.Info("[Main] Staking configuration acquired")
+	log.Info("[Main] Gopher translator configuration acquired")
 
 	return service
 }
